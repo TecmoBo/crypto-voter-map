@@ -50,8 +50,8 @@
     .swc-scroll::-webkit-scrollbar-thumb:hover { background: #F7931A; }
 
     .state-path { cursor: pointer; transition: filter 0.18s ease, stroke-width 0.12s ease; }
-    .state-path:hover { filter: brightness(1.4) drop-shadow(0 0 8px rgba(123, 63, 228, 0.6)); }
-    .state-path:focus { outline: none; stroke: #9B6FF4 !important; stroke-width: 2.5px !important; }
+    .state-path:hover { filter: brightness(1.3) drop-shadow(0 0 8px rgba(247, 147, 26, 0.6)); }
+    .state-path:focus { outline: none; stroke: #FFAD4D !important; stroke-width: 2.5px !important; }
     .state-label { pointer-events: none; user-select: none; font-family: 'Satoshi', 'Inter', sans-serif; font-weight: 700; font-size: 10px; fill: rgba(255, 255, 255, 0.85); text-anchor: middle; dominant-baseline: central; }
 
     @keyframes slideInRight { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: translateX(0); } }
@@ -845,8 +845,8 @@
                   key={fips}
                   d={pathGen(feat)}
                   className="state-path"
-                  fill="#7B3FE4"
-                  stroke={isActive ? '#9B6FF4' : '#0D0D1A'}
+                  fill="#F7931A"
+                  stroke={isActive ? '#FFAD4D' : '#0D0D1A'}
                   strokeWidth={isActive ? 2.5 : 0.7}
                   tabIndex={0}
                   role="button"
@@ -1052,7 +1052,7 @@
 
       return (
         <div className="flex flex-col" style={{ height: '100dvh', background: '#0D0D1A', overflow: 'hidden' }}>
-          <Header totalPoliticians={stats.total} />
+          {/* Header removed per Bitcoin Magazine feedback */}
 
           {/* ── Desktop layout (md+) ── */}
           <div className="hidden md:flex flex-1 overflow-hidden">
