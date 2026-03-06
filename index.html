@@ -82,7 +82,7 @@
        CONFIG — swap API keys here for deployment
        ================================================================ */
     const CONFIG = {
-      SWC_API_URL:  "https://www.standwithcrypto.org/api/public/dtsi/all-people/us",
+      SWC_API_URL:  "https://www.standwithcrypto.org/api/us/public/partners/races/all-people",
       TOPO_URL:     "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json",
       SWC_JOIN_URL: "https://www.standwithcrypto.org?utm_source=bitcoinmagazine&utm_medium=verified-partner&utm_content=map",
       SWC_PROFILE:  "https://www.standwithcrypto.org/politicians/person",
@@ -215,6 +215,7 @@
 
         const score = p.manuallyOverriddenStanceScore ?? p.computedStanceScore;
         const lastName = p.lastName || '';
+        const displayName = `${p.firstNickname || p.firstName} ${lastName}${p.nameSuffix ? ' ' + p.nameSuffix : ''}`;
         // Check if term has expired — API sometimes keeps status=HELD even after dateEnd passes
         const termExpired = role.dateEnd && new Date(role.dateEnd) < new Date();
         const isIncumbent = role.status === 'HELD' && !termExpired;
@@ -222,7 +223,7 @@
         const candidate = {
           id: p.id,
           slug: p.slug,
-          name: `${p.firstNickname || p.firstName} ${lastName}${p.nameSuffix ? ' ' + p.nameSuffix : ''}`,
+          name: displayName,
           party: p.politicalAffiliationCategoryV2,
           score,
           photo: p.profilePictureUrl,
@@ -238,14 +239,32 @@
           if (SENATE_2026[abbr] && isClass2Senator(p)) {
             if (!byState[fips].senate) byState[fips].senate = { candidates: [], isPriority: false };
             byState[fips].senate.candidates.push(candidate);
-            if (candidate.isPriority) byState[fips].senate.isPriority = true;
           }
         } else {
           // HOUSE — every seat is up in 2026
           const dist = role.primaryDistrict || 'AL';
           if (!byState[fips].house[dist]) byState[fips].house[dist] = { candidates: [], isPriority: false };
           byState[fips].house[dist].candidates.push(candidate);
-          if (candidate.isPriority) byState[fips].house[dist].isPriority = true;
+        }
+
+        // Check roles array for House members also running for Senate
+        if (cat === 'CONGRESS' && p.roles) {
+          const senateRun = p.roles.find(r =>
+            r.roleCategory === 'SENATE' && r.status === 'RUNNING_FOR' && r.primaryState
+          );
+          if (senateRun) {
+            const sAbbr = senateRun.primaryState;
+            const sFips = ABBR_TO_FIPS[sAbbr];
+            if (sFips && SENATE_2026[sAbbr]) {
+              if (!byState[sFips]) byState[sFips] = { senate: null, house: {} };
+              if (!byState[sFips].senate) byState[sFips].senate = { candidates: [], isPriority: false };
+              byState[sFips].senate.candidates.push({
+                ...candidate,
+                id: p.id + '-senate',
+                isIncumbent: false,
+              });
+            }
+          }
         }
       });
 
@@ -294,30 +313,37 @@
 
     /*
      * Decode compact fallback data format back to API-like objects.
-     * Compact: [name, party, score, state, role, distOrUp, incumbent, priority, slug, photo]
+     * Compact: [name, party, score, state, role, dist, incumbent, senateRun, slug, photo]
+     * senateRun: state abbr if this House member is also running for Senate, else 0
      */
     function decodeCompactData(arr) {
       const PARTY_MAP = { R: 'US_REPUBLICAN', D: 'US_DEMOCRAT', I: 'US_INDEPENDENT' };
-      return arr.map(r => ({
-        id: r[8] || Math.random().toString(36).slice(2),
-        slug: r[8],
-        firstName: r[0].split(' ')[0],
-        lastName: r[0].split(' ').slice(1).join(' '),
-        politicalAffiliationCategoryV2: PARTY_MAP[r[1]] || null,
-        computedStanceScore: r[2] === -1 ? null : r[2],
-        manuallyOverriddenStanceScore: null,
-        profilePictureUrl: r[9] || null,
-        promotedPositioning: r[7] === 1 ? 1 : null,
-        donationUrl: null,
-        officialUrl: null,
-        primaryRole: {
-          roleCategory: r[4] === 'S' ? 'SENATE' : 'CONGRESS',
-          primaryState: r[3],
-          primaryDistrict: r[4] === 'H' ? (r[5] || '') : '',
-          status: r[6] === 1 ? 'HELD' : 'RUNNING_FOR',
-          dateEnd: (r[4] === 'S' && r[5] === 1) ? '2027-01-03T00:00:00.000Z' : '',
-        },
-      }));
+      return arr.map(r => {
+        const roles = [];
+        if (r[7] && typeof r[7] === 'string') {
+          roles.push({ roleCategory: 'SENATE', status: 'RUNNING_FOR', primaryState: r[7], primaryDistrict: '' });
+        }
+        return {
+          id: r[8] || Math.random().toString(36).slice(2),
+          slug: r[8],
+          firstName: r[0].split(' ')[0],
+          lastName: r[0].split(' ').slice(1).join(' '),
+          politicalAffiliationCategoryV2: PARTY_MAP[r[1]] || null,
+          computedStanceScore: r[2] === -1 ? null : r[2],
+          manuallyOverriddenStanceScore: null,
+          profilePictureUrl: r[9] || null,
+          donationUrl: null,
+          officialUrl: null,
+          primaryRole: {
+            roleCategory: r[4] === 'S' ? 'SENATE' : 'CONGRESS',
+            primaryState: r[3],
+            primaryDistrict: r[4] === 'H' ? (r[5] || '') : '',
+            status: r[6] === 1 ? 'HELD' : 'RUNNING_FOR',
+            dateEnd: (r[4] === 'S' && r[5] === 1) ? '2027-01-03T00:00:00.000Z' : '',
+          },
+          roles,
+        };
+      });
     }
 
     /* Nominatim (OpenStreetMap) address autocomplete — free, no API key needed */
