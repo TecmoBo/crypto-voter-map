@@ -986,28 +986,17 @@
       const [mobileOpen,   setMobileOpen]   = useState(false);
       const [rawPeople,    setRawPeople]    = useState([]);
 
-      // Fetch live data from SWC API, fallback to local compact JSON
+      // Always use local corrected data (visibility-filtered swc_embedded_data.json)
       useEffect(() => {
-        fetch(CONFIG.SWC_API_URL)
-          .then(r => { if (!r.ok) throw new Error(); return r.json(); })
-          .then(data => {
-            const people = data.people || [];
+        fetch('swc_embedded_data.json')
+          .then(r => r.json())
+          .then(compact => {
+            const people = decodeCompactData(compact);
             setRawPeople(people);
             setRaces(buildRaces(people));
             setLoading(false);
           })
-          .catch(() => {
-            // API failed (CORS, network, etc.) — try local fallback
-            fetch('swc_embedded_data.json')
-              .then(r => r.json())
-              .then(compact => {
-                const people = decodeCompactData(compact);
-                setRawPeople(people);
-                setRaces(buildRaces(people));
-                setLoading(false);
-              })
-              .catch(() => { setApiError(true); setLoading(false); });
-          });
+          .catch(() => { setApiError(true); setLoading(false); });
       }, []);
 
 
