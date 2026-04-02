@@ -313,12 +313,13 @@
 
     /*
      * Decode compact fallback data format back to API-like objects.
-     * Compact: [name, party, score, state, role, dist, incumbent, senateRun, slug, photo]
+     * Compact: [name, party, score, state, role, dist, incumbent, senateRun, slug, photo, visible]
      * senateRun: state abbr if this House member is also running for Senate, else 0
+     * visible: 1=show, 0=hidden (candidate no longer on SWC site)
      */
     function decodeCompactData(arr) {
       const PARTY_MAP = { R: 'US_REPUBLICAN', D: 'US_DEMOCRAT', I: 'US_INDEPENDENT' };
-      return arr.map(r => {
+      return arr.filter(r => r[10] !== 0).map(r => {
         const roles = [];
         if (r[7] && typeof r[7] === 'string') {
           roles.push({ roleCategory: 'SENATE', status: 'RUNNING_FOR', primaryState: r[7], primaryDistrict: '' });
