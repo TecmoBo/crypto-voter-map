@@ -108,6 +108,13 @@
       "district": "37",
       "state": "TX"
     },
+    "garland---barr": {
+      "chamber": "S",
+      "district": "",
+      "incumbent": 0,
+      "senate_run": 0,
+      "state": "KY"
+    },
     "haley---stevens": {
       "chamber": "S",
       "district": "",
@@ -166,109 +173,6 @@
       "state": "NJ"
     }
   },
-  "score_overrides": {
-    "adriano---espaillat": {
-      "api_score": 48,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "debbie---wassermanschultz": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "doris---matsui": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "emilia---sykes": {
-      "api_score": 48,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "erica---lee": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "gabe---amo": {
-      "api_score": 47,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "grace---meng": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "gregory---meeks": {
-      "api_score": 48,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "hakeem---jeffries": {
-      "api_score": 49,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "jake---lang": {
-      "api_score": 49,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "james---himes": {
-      "api_score": 49,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "lori---trahan": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "morgan---mcgarvey": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "rick---larsen": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "seth---magaziner": {
-      "api_score": 45,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "sheila---cherfilus-mccormick": {
-      "api_score": 46,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    },
-    "wesley---bell": {
-      "api_score": 48,
-      "page_score": 25,
-      "reason": "match_live_swc_race_page",
-      "score": 25
-    }
-  },
+  "score_overrides": {},
   "version": 1
 }

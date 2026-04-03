@@ -114,8 +114,10 @@ def score_bucket(score: Optional[int]) -> str:
         return "A"
     if score >= 70:
         return "B"
-    if score >= 40:
+    if score >= 50:
         return "C"
+    if score >= 25:
+        return "D"
     return "F"
 
 

@@ -125,18 +125,20 @@
 
     /* ================================================================
        Rating display logic (letter grades)
-       Score 90–100  A  Strongly Pro-Crypto  #22C55E
-       Score 70–89   B  Pro-Crypto           #84CC16
-       Score 40–69   C  Neutral              #F97316
-       Score 0–39    F  Anti-Crypto          #EF4444
+       Score 90–100  A  Very Pro-Crypto         #22C55E
+       Score 70–89   B  Somewhat Pro-Crypto     #84CC16
+       Score 50–69   C  Neutral on Crypto       #9CA3AF
+       Score 25–49   D  Somewhat Against Crypto #F97316
+       Score 0–24    F  Very Anti-Crypto        #EF4444
        null          —  Not Yet Rated        #9CA3AF
        ================================================================ */
     function getRating(score) {
       if (score == null) return { label: 'Not Yet Rated', grade: '—', color: '#9CA3AF', badge: '—' };
-      if (score >= 90)   return { label: 'Strongly Pro-Crypto', grade: 'A',  color: '#22C55E', badge: '🅰️' };
-      if (score >= 70)   return { label: 'Pro-Crypto',          grade: 'B',  color: '#84CC16', badge: '🅱️' };
-      if (score >= 40)   return { label: 'Neutral',             grade: 'C',  color: '#F97316', badge: '©️' };
-      return                     { label: 'Anti-Crypto',        grade: 'F',  color: '#EF4444', badge: '🅵' };
+      if (score >= 90)   return { label: 'Very Pro-Crypto',         grade: 'A', color: '#22C55E', badge: 'A' };
+      if (score >= 70)   return { label: 'Somewhat Pro-Crypto',     grade: 'B', color: '#84CC16', badge: 'B' };
+      if (score >= 50)   return { label: 'Neutral on Crypto',       grade: 'C', color: '#9CA3AF', badge: 'C' };
+      if (score >= 25)   return { label: 'Somewhat Against Crypto', grade: 'D', color: '#F97316', badge: 'D' };
+      return                     { label: 'Very Anti-Crypto',        grade: 'F', color: '#EF4444', badge: 'F' };
     }
 
     const PARTY_STYLE = {
@@ -953,9 +955,9 @@
               <div className="text-[#9CA3AF] text-xs uppercase tracking-widest font-semibold">National Snapshot</div>
               <div className="text-white text-2xl font-bold">{totalPoliticians} <span className="text-[#6B7280] text-sm font-normal">politicians rated</span></div>
               {[
-                { label: 'Pro-Crypto (A–B)',    count: proCount,   color: '#22C55E', pct: Math.round(proCount / totalPoliticians * 100) },
-                { label: 'Neutral (C)',          count: mixedCount, color: '#9CA3AF', pct: Math.round(mixedCount / totalPoliticians * 100) },
-                { label: 'Anti-Crypto (F)',      count: antiCount,  color: '#EF4444', pct: Math.round(antiCount / totalPoliticians * 100) },
+                { label: 'Pro-Crypto (A-B)',      count: proCount,   color: '#22C55E', pct: Math.round(proCount / totalPoliticians * 100) },
+                { label: 'Neutral on Crypto (C)', count: mixedCount, color: '#9CA3AF', pct: Math.round(mixedCount / totalPoliticians * 100) },
+                { label: 'Against Crypto (D-F)',  count: antiCount,  color: '#F97316', pct: Math.round(antiCount / totalPoliticians * 100) },
               ].map(({ label, count, color, pct }) => (
                 <div key={label} className="flex items-center gap-2 text-xs">
                   <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
@@ -1011,8 +1013,8 @@
         scored.forEach(p => {
           const s = p.manuallyOverriddenStanceScore ?? p.computedStanceScore;
           if (s >= 70) pro++;        // A or B grade
-          else if (s >= 40) mixed++; // C grade
-          else anti++;               // F grade
+          else if (s >= 50) mixed++; // C grade
+          else anti++;               // D or F grade
         });
         return { total: scored.length, pro, mixed, anti };
       }, [rawPeople]);
