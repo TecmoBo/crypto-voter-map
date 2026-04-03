@@ -90,6 +90,12 @@
     .swc-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
     .swc-scroll::-webkit-scrollbar-thumb { background: rgba(247, 147, 26, 0.35); border-radius: 2px; }
     .swc-scroll::-webkit-scrollbar-thumb:hover { background: var(--bm-orange); }
+    .panel-scroll {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
 
     .state-path { cursor: pointer; transition: filter 0.18s ease, stroke-width 0.12s ease; }
     .state-path:hover { filter: brightness(1.18) drop-shadow(0 0 10px rgba(247, 147, 26, 0.38)); }
@@ -576,7 +582,7 @@
               </div>
               <div className="min-w-0">
                 <div className="eyebrow text-[11px] text-[var(--bm-orange-soft)]">Bitcoin Magazine</div>
-                <h1 className="font-display text-[26px] md:text-[34px] uppercase leading-none tracking-[0.02em] text-[var(--bm-text)]">2026 Crypto Voter Map</h1>
+                <h1 className="font-display text-[26px] md:text-[34px] uppercase leading-none tracking-[0.02em] text-[var(--bm-text)]">2026 Voter Map</h1>
                 <p className="text-[var(--bm-muted)] text-xs md:text-sm mt-1 max-w-[44rem]">
                   Powered by Stand With Crypto
                 </p>
@@ -685,7 +691,7 @@
             <CloseBtn onClick={onClose} />
           </div>
 
-          <div ref={scrollRef} className="flex-1 overflow-y-auto swc-scroll px-5 py-4">
+          <div ref={scrollRef} className="flex-1 min-h-0 panel-scroll swc-scroll px-5 py-4">
             {!data ? (
               <div className="text-center py-10">
                 <p className="text-[var(--bm-muted)] text-sm mb-4">No rated candidates yet for {state.name}. Sign up at Stand With Crypto to stay informed.</p>
@@ -745,7 +751,7 @@
             <CloseBtn onClick={onClose} />
           </div>
 
-          <div className="flex-1 overflow-y-auto swc-scroll px-5 py-4">
+          <div className="flex-1 min-h-0 panel-scroll swc-scroll px-5 py-4">
             {data?.senate && (
               <div className="mb-4">
                 <div className="eyebrow text-[11px] text-[var(--bm-muted)] mb-1">U.S. Senate — {stateName}</div>
@@ -1177,6 +1183,15 @@
         setMobileOpen(false);
       }
 
+      useEffect(() => {
+        if (!mobileOpen) return undefined;
+        const previousOverscroll = document.body.style.overscrollBehavior;
+        document.body.style.overscrollBehavior = 'none';
+        return () => {
+          document.body.style.overscrollBehavior = previousOverscroll;
+        };
+      }, [mobileOpen]);
+
       const sidebarContent = () => {
         if (panelMode === 'state' && selectedFips)
           return <StatePanel fips={selectedFips} races={races} onClose={handleClose} />;
@@ -1255,11 +1270,11 @@
           {/* ── Mobile bottom sheet ── */}
           {mobileOpen && (
             <div className="md:hidden fixed inset-0 z-40 anim-fade" style={{ background: 'rgba(0,0,0,0.65)' }} onClick={handleClose}>
-              <div className="anim-slide-up absolute bottom-0 left-0 right-0 rounded-t-[28px] editorial-panel" style={{ maxHeight: '82vh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
+              <div className="anim-slide-up absolute bottom-0 left-0 right-0 rounded-t-[28px] editorial-panel overflow-hidden" style={{ height: '82dvh', maxHeight: '82dvh', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
                 <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
                   <div className="w-10 h-1 bg-[rgba(255,255,255,0.16)] rounded-full" />
                 </div>
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-hidden">
                   {sidebarContent()}
                 </div>
               </div>
