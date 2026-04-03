@@ -22,6 +22,7 @@ from pathlib import Path
 # ── Config ──────────────────────────────────────────────────────────────────────
 API_URL  = "https://www.standwithcrypto.org/api/us/public/partners/races/all-people"
 OUT_FILE = Path(__file__).parent / "swc_embedded_data.json"
+OVERRIDES_FILE = Path(__file__).parent / "repair_overrides.json"
 HEADERS  = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -49,6 +50,35 @@ def fetch_api() -> list[dict]:
     people = data["people"]
     print(f"  {len(people)} candidates received")
     return people
+
+
+def load_existing_visibility() -> dict[str, int]:
+    if not OUT_FILE.exists():
+        return {}
+    with open(OUT_FILE) as f:
+        rows = json.load(f)
+    return {
+        row[8]: row[10]
+        for row in rows
+        if len(row) >= 11 and row[8]
+    }
+
+
+def load_overrides() -> dict:
+    if not OVERRIDES_FILE.exists():
+        return {
+            "race_overrides": {},
+            "excluded_slugs": {},
+            "extra_candidates": [],
+            "score_overrides": {},
+        }
+    with open(OVERRIDES_FILE) as f:
+        data = json.load(f)
+    data.setdefault("race_overrides", {})
+    data.setdefault("excluded_slugs", {})
+    data.setdefault("extra_candidates", [])
+    data.setdefault("score_overrides", {})
+    return data
 
 
 def build_record(p: dict):
@@ -109,6 +139,8 @@ def build_record(p: dict):
 
 
 def main():
+    existing_visibility = load_existing_visibility()
+    overrides = load_overrides()
     people  = fetch_api()
     records = []
     skipped = 0
@@ -118,7 +150,51 @@ def main():
         if rec is None:
             skipped += 1
         else:
+            slug = rec[8]
+            if slug in existing_visibility:
+                rec[10] = existing_visibility[slug]
+
+            race_override = overrides["race_overrides"].get(slug)
+            if race_override:
+                rec[3] = race_override["state"]
+                rec[4] = race_override["chamber"]
+                rec[5] = race_override["district"]
+                if "incumbent" in race_override:
+                    rec[6] = race_override["incumbent"]
+                if "senate_run" in race_override:
+                    rec[7] = race_override["senate_run"]
+
+            if slug in overrides["excluded_slugs"]:
+                rec[10] = 0
+
+            score_override = overrides["score_overrides"].get(slug)
+            if score_override:
+                rec[2] = score_override["score"]
+
             records.append(rec)
+
+    existing_slugs = {r[8] for r in records if r[8]}
+    added_extras = 0
+    for candidate in overrides["extra_candidates"]:
+        slug = candidate["slug"]
+        if slug in existing_slugs:
+            continue
+        visibility = existing_visibility.get(slug, candidate.get("visibility", 1))
+        records.append([
+            candidate["name"],
+            candidate["party"],
+            candidate["score"],
+            candidate["state"],
+            candidate["chamber"],
+            candidate["district"],
+            candidate.get("incumbent", 0),
+            candidate.get("senate_run", 0),
+            slug,
+            candidate.get("photo"),
+            visibility,
+        ])
+        existing_slugs.add(slug)
+        added_extras += 1
 
     # Stats
     total     = len(records)
@@ -139,6 +215,11 @@ def main():
     print(f"  Rated (has score):      {rated}")
     print(f"  Unrated (score = -1):   {unrated}")
     print(f"  Party breakdown:        R={parties['R']} D={parties['D']} I={parties['I']} ?={parties['?']}")
+    print(f"  Preserved visibility:   {len(existing_visibility)} slugs")
+    print(f"  Race overrides:         {len(overrides['race_overrides'])}")
+    print(f"  Excluded slugs:         {len(overrides['excluded_slugs'])}")
+    print(f"  Score overrides:        {len(overrides['score_overrides'])}")
+    print(f"  Added extra records:    {added_extras}")
 
     if DRY_RUN:
         print("\n[DRY RUN] Not writing file.")
